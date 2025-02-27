@@ -12,8 +12,8 @@ contract DealJetton with Deployable {
     isActive: Bool; // Boolean flag indicating if the deal is active
     isFinished: Bool; // Boolean flag indicating if the deal is finished
     jettonWalletAddress: Address;
-    customerJetton: Address;
-    freelancerJetton: Address;
+    customerJettonAddress: Address;
+    freelancerJettonAddress: Address;
     /**
     @dev Constructor to initialize the deal contract.
     @param dealId Unique identifier for the deal.
@@ -26,9 +26,9 @@ contract DealJetton with Deployable {
         amount: Int,
         admin: Address,
         customer: Address,
-        customerJetton: Address,
+        customerJettonAddress: Address,
         freelancer: Address,
-        freelancerJetton: Address,
+        freelancerJettonAddress: Address,
         jettonMasterAddress: Address){
         require(admin != newAddress(0, 0), "Incorrect admin address"); // Check if the admin address is valid
         require(customer != newAddress(0, 0), "Incorrect customer address"); // Check if the customer address is valid
@@ -42,9 +42,9 @@ contract DealJetton with Deployable {
         self.freelancer = freelancer; // Set the freelancer's address
         self.isActive = false; // Mark the deal as inactive initially
         self.isFinished = false; // Mark the deal as unfinished initially
-        self.jettonWalletAddress = jettonMasterAddress; // временно заполним переменную
-        self.freelancerJetton = freelancerJetton;
-        self.customerJetton = customerJetton;
+        self.jettonWalletAddress = jettonMasterAddress; // Temporary initialization
+        self.freelancerJettonAddress = freelancerJettonAddress;
+        self.customerJettonAddress = customerJettonAddress;
         send(SendParameters{
                 to: jettonMasterAddress,
                 value: 0,
@@ -55,7 +55,7 @@ contract DealJetton with Deployable {
     }
 
     receive(msg: TakeWalletAddress){
-        require(sender() == self.jettonWalletAddress, "unauthorized");
+        require(sender() == self.jettonWalletAddress, "unauthorized"); // jettonWalletAddress is master address, before we change it
         self.jettonWalletAddress = msg.walletAddress;
     }
 
@@ -85,7 +85,7 @@ contract DealJetton with Deployable {
         self.isFinished = true; // Mark the deal as finished
 
         send(SendParameters{
-                to: self.freelancerJetton,
+                to: self.freelancerJettonAddress,
                 value: 0,
                 mode: SendRemainingValue,
                 bounce: false,

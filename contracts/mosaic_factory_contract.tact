@@ -1,5 +1,6 @@
 import "@stdlib/deploy";
 import "./mosaic_deal_contract.tact";
+import "./mosaic_deal_jetton.tact";
 import "./messages.tact";
 
 contract MosaicFactoryContract with Deployable {
@@ -11,21 +12,17 @@ contract MosaicFactoryContract with Deployable {
     **/
     receive(msg: CreateDeal){
         let init: StateInit = initOf DealContract(msg.id, msg.amount, msg.admin, msg.customer, msg.freelancer);
+        let dealContractAddress: Address = contractAddress(init);
         send(SendParameters{
-                to: contractAddress(init),
+                to: dealContractAddress,
                 value: 0,
-                mode: SendRemainingValue,
+                mode: SendRemainingValue + SendIgnoreErrors,
+                body: "Deposit".asComment(),
                 code: init.code,
                 data: init.data
             }
         );
-        send(SendParameters{
-                to: contractAddress(init),
-                bounce: false,
-                value: msg.value, // SET VALUE
-                mode: 0
-            }
-        );
+        // send(SendParameters{to: contractAddress(init), bounce: false, value: 0, mode: SendRemainingValue});
     }
 
     /**

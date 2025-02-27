@@ -1,1 +1,1 @@
-export * from '../build/MosaicDealContract/tact_MosaicDealContract';
+export * from '../build/MosaicDealContract/tact_DealContract';

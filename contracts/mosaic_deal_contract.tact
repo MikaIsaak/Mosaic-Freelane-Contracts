@@ -19,29 +19,22 @@ contract DealContract with Deployable {
     @param freelancer The address of the freelancer performing the job in the deal.
     **/
     init(id: String, amount: Int, admin: Address, customer: Address, freelancer: Address){
-        require(admin != newAddress(0, 0), "Incorrect admin address"); // Check if the admin address is valid
-        require(customer != newAddress(0, 0), "Incorrect customer address"); // Check if the customer address is valid
-        require(freelancer != newAddress(0, 0), "Incorrect freelancer address"); // Check if the freelancer address is valid
+        // newAddress() is gas-expensive
+        // require(admin != newAddress(0, 0), "Incorrect admin address"); // Check if the admin address is valid
+        // require(customer != newAddress(0, 0), "Incorrect customer address"); // Check if the customer address is valid
+        // require(freelancer != newAddress(0, 0), "Incorrect freelancer address"); // Check if the freelancer address is valid
         require(amount != 0, "Incorrect amount"); // Ensure that the amount is not zero
-
         self.id = id; // Set the deal ID
         self.amount = amount; // Set the deal amount
         self.admin = admin; // Set the administrator's address
         self.customer = customer; // Set the customer's address
         self.freelancer = freelancer; // Set the freelancer's address
-        self.isActive = false; // Mark the deal as inactive initially
         self.isFinished = false; // Mark the deal as unfinished initially
+        self.isActive = false;
     }
 
-    /**
-    @dev Handles deposits from the customer and activates the deal if the conditions are met.
-    **/
     receive("Deposit"){
-        require(context().sender == self.customer, "Incorrect sender"); // Ensure the sender is the customer
-        require(self.isActive == false, "Deal is already active"); // Ensure the deal isn't already active
-        require(self.isFinished == false, "Deal is already finished"); // Ensure the deal isn't already finished
-        require(context().value >= self.amount, "Incorrect value of deal"); // Ensure the deposit matches or exceeds the deal value
-
+        require(context().value >= self.amount, "Incorrect amount");
         self.isActive = true;
     }
 

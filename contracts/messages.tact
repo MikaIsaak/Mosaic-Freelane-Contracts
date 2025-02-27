@@ -1,3 +1,20 @@
+// FactoryContract
+message CreateDeal {
+    id: String;
+    amount: Int as coins;
+    admin: Address;
+    customer: Address;
+    freelancer: Address;
+}
+message CreateDealWithJetton {
+    id: String;
+    amount: Int as coins;
+    admin: Address;
+    customer: Address;
+    freelancer: Address;
+    jettonWalletAddress: Address;
+}
+// DealJetton
 message(0xf8a7ea5) JettonTransfer {
     queryId: Int as uint64;
     amount: Int as coins;
@@ -22,32 +39,13 @@ message(0xd1735400) TakeWalletAddress {
     queryId: Int as uint64;
     walletAddress: Address;
 }
-message CreateDeal {
-    id: String;
-    amount: Int as coins;
-    admin: Address;
-    customer: Address;
-    freelancer: Address;
-    value: Int as coins;
-}
-message CreateDealWithJetton {
-    id: String;
-    amount: Int as coins;
-    admin: Address;
-    customer: Address;
-    freelancer: Address;
-    jettonWalletAddress: Address;
-}
+
+// Common
+
 message FinishDeal {
 }
 message AdminForceEnd {
     receiver: Address;
 }
-message Deposit {
-}
-message SetJettonWalletAddress {
-    jettonWalletAddress: Address;
-}
-message InitDataMessage {
-    jettonWalletAddress: Address;
-}
+
+// DealContract
