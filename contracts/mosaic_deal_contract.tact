@@ -1,5 +1,5 @@
 import "@stdlib/deploy";
-import "./messages";
+import "./models/messages";
 
 contract DealContract with Deployable {
     id: String; // Unique identifier for the deal

@@ -1,1 +1,1 @@
-export * from '../build/MosaicDealJetton/tact_MosaicDealJetton';
+export * from '../build/MosaicDealJetton/tact_DealJetton';

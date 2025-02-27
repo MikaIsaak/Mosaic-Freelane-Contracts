@@ -1,7 +1,7 @@
 import "@stdlib/deploy";
 import "./mosaic_deal_contract.tact";
 import "./mosaic_deal_jetton.tact";
-import "./messages.tact";
+import "./models/messages.tact";
 
 contract MosaicFactoryContract with Deployable {
     init(){}
@@ -22,8 +22,28 @@ contract MosaicFactoryContract with Deployable {
                 data: init.data
             }
         );
-        // send(SendParameters{to: contractAddress(init), bounce: false, value: 0, mode: SendRemainingValue});
     }
+
+    receive(msg: CreateDealWithJetton){
+        let init: StateInit = initOf DealJetton(msg.id,
+            msg.amount,
+            msg.admin,
+            msg.customerAddress,
+            msg.customerJettonAddress,
+            msg.freelancerAddress,
+            msg.freelancerJettonAddress,
+            msg.jettonMasterAddress
+        );
+        let dealJettonAddress: Address = contractAddress(init);
+        send(SendParameters{
+            to: dealJettonAddress,
+            value: 0,
+            mode: SendRemainingValue + SendIgnoreErrors,
+            code: init.code,
+            data: init.data
+        })
+    }
+
 
     /**
     @dev Returns the address of a child contract.
@@ -33,6 +53,19 @@ contract MosaicFactoryContract with Deployable {
     **/
     get fun addressOfChildWithTon(msg: CreateDeal): Address {
         let init: StateInit = initOf DealContract(msg.id, msg.amount, msg.admin, msg.customer, msg.freelancer);
+        return contractAddress(init);
+    }
+
+    get fun addressOfChildWithJetton(msg: CreateDealWithJetton): Address {
+        let init: StateInit = initOf DealJetton(msg.id,
+            msg.amount,
+            msg.admin,
+            msg.customerAddress,
+            msg.customerJettonAddress,
+            msg.freelancerAddress,
+            msg.freelancerJettonAddress,
+            msg.jettonMasterAddress
+        );
         return contractAddress(init);
     }
 }

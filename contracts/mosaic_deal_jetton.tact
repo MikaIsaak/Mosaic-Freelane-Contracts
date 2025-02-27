@@ -1,7 +1,5 @@
 import "@stdlib/deploy";
-import "./messages.tact";
-message(0xd53276db) Excesses {
-}
+import "./models/messages.tact";
 
 contract DealJetton with Deployable {
     id: String; // Unique identifier for the deal
@@ -30,9 +28,9 @@ contract DealJetton with Deployable {
         freelancer: Address,
         freelancerJettonAddress: Address,
         jettonMasterAddress: Address){
-        require(admin != newAddress(0, 0), "Incorrect admin address"); // Check if the admin address is valid
-        require(customer != newAddress(0, 0), "Incorrect customer address"); // Check if the customer address is valid
-        require(freelancer != newAddress(0, 0), "Incorrect freelancer address"); // Check if the freelancer address is valid
+        // require(admin != newAddress(0, 0), "Incorrect admin address"); // Check if the admin address is valid
+        // require(customer != newAddress(0, 0), "Incorrect customer address"); // Check if the customer address is valid
+        // require(freelancer != newAddress(0, 0), "Incorrect freelancer address"); // Check if the freelancer address is valid
         require(amount != 0, "Incorrect amount"); // Ensure that the amount is not zero
 
         self.id = id; // Set the deal ID
