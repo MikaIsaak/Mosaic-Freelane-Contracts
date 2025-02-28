@@ -1,22 +1,27 @@
 import { toNano } from '@ton/core';
-import { MosaicDealContract } from '../wrappers/MosaicDealContract';
+import { MosaicFactoryContract } from '../wrappers/MosaicFactoryContract';
 import { NetworkProvider } from '@ton/blueprint';
+import { FACTORY_ADDRESS } from './consts';
 
 export async function run(provider: NetworkProvider) {
-    const mosaicDealContract = provider.open(await MosaicDealContract.fromInit(BigInt(Math.floor(Math.random() * 10000))));
+    const factoryContract = provider.open(await MosaicFactoryContract.fromAddress(FACTORY_ADDRESS));
+    const amount = toNano('0.1'); // CHANGE ME
+    const admin = provider.sender().address!!; // CHANGE ME
+    const customer = provider.sender().address!!; // CHANGE ME
+    const freelancer = provider.sender().address!!; // CHANGE ME
 
-    await mosaicDealContract.send(
+    await factoryContract.send(
         provider.sender(),
         {
-            value: toNano('0.05'),
+            value: amount + toNano('0.06'),
         },
         {
-            $$type: 'Deploy',
-            queryId: 0n,
-        }
+            $$type: 'CreateDeal',
+            id: 'sh',
+            amount: amount,
+            admin: admin,
+            customer: customer,
+            freelancer: freelancer,
+        },
     );
-
-    await provider.waitForDeploy(mosaicDealContract.address);
-
-    console.log('ID', await mosaicDealContract.getId());
 }

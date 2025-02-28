@@ -8,6 +8,7 @@ import exp from 'constants';
 import { JettonMaster } from '../wrappers/JettonMaster';
 import { JettonWallet } from '../wrappers/JettonWallet';
 import { DealJetton } from '../wrappers/MosaicDealJetton';
+import { create } from 'domain';
 
 describe('MosaicFactoryContract', () => {
     let blockchain: Blockchain;
@@ -78,7 +79,7 @@ describe('MosaicFactoryContract', () => {
                 await JettonMaster.fromInit(admin.address, {
                     $$type: 'Tep64TokenData',
                     flag: 1n,
-                    content: 'helpmeplz',
+                    content: 'http//helpmeplz',
                 }),
             );
             const deployResult = await jettonMaster.send(
@@ -101,14 +102,14 @@ describe('MosaicFactoryContract', () => {
 
         // mint jettons
         {
-            const amount = toNano('1');
+            const amount = 100n;
             customerJetton = blockchain.openContract(
                 JettonWallet.fromAddress(await jettonMaster.getGetWalletAddress(customer.address)),
             );
             const mintResult = await jettonMaster.send(
                 admin.getSender(),
                 {
-                    value: toNano('1'),
+                    value: toNano('0.1'),
                 },
                 {
                     $$type: 'MintJetton',
@@ -125,7 +126,7 @@ describe('MosaicFactoryContract', () => {
         }
         // jetton deal creation
         {
-            const amount = toNano('0.1');
+            const amount = 100n;
 
             freelancerJetton = blockchain.openContract(
                 JettonWallet.fromAddress(await jettonMaster.getGetWalletAddress(freelancer.address)),
@@ -141,11 +142,9 @@ describe('MosaicFactoryContract', () => {
                     id: 'sh',
                     amount: amount,
                     admin: admin.address,
-                    customerAddress: customer.address,
-                    customerJettonAddress: customerJetton.address,
-                    freelancerAddress: freelancer.address,
-                    freelancerJettonAddress: freelancerJetton.address,
-                    jettonMasterAddress: jettonMaster.address,
+                    customer: customer.address,
+                    freelancer: freelancer.address,
+                    jettonMaster: jettonMaster.address,
                 },
             );
             dealJettonContract = blockchain.openContract(
@@ -154,26 +153,42 @@ describe('MosaicFactoryContract', () => {
                     amount,
                     admin.address,
                     customer.address,
-                    customerJetton.address,
                     freelancer.address,
-                    freelancerJetton.address,
                     jettonMaster.address,
                 ),
             );
             dealJettonWallet = blockchain.openContract(
                 JettonWallet.fromAddress(await jettonMaster.getGetWalletAddress(dealJettonContract.address)),
             );
-            console.log(await dealJettonContract.getJettonWalletAddress());
-            console.log(dealJettonWallet.address);
-            //            expect(() == ).toBe(true);
-        }
-        // jetton deal deposit
-        {
-            // expect((await dealJettonWallet.getGetWalletData()).balance).toEqual(a);
+            expect((await dealJettonContract.getJettonWalletAddress()).toString()).toEqual(
+                dealJettonWallet.address.toString(),
+            );
         }
 
         snapshot = blockchain.snapshot();
     });
 
     it('should deploy', async () => {});
+    it('should deposit jetton', async () => {
+        await blockchain.loadFrom(snapshot);
+        const amount = 100n;
+        const depositResult = await customerJetton.send(
+            customer.getSender(),
+            {
+                value: toNano('0.08'),
+            },
+            {
+                $$type: 'TokenTransfer',
+                queryId: 0n,
+                amount: amount,
+                destination: dealJettonContract.address,
+                responseDestination: customer.address,
+                customPayload: null,
+                forwardAmount: toNano('0.02'),
+                forwardPayload: null,
+            },
+        );
+        console.log(depositResult.events);
+        expect(await dealJettonContract.getIsActive()).toEqual(true);
+    });
 });

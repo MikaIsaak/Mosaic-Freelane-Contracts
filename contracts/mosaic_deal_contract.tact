@@ -42,7 +42,7 @@ contract DealContract with Deployable {
     @dev Marks the deal as finished by the customer and transfers the remaining balance to the freelancer.
     @param msg The message indicating the deal should be completed.
     **/
-    receive(msg: FinishDeal){
+    receive("Finish deal"){
         require(context().sender == self.customer, "Incorrect sender"); // Ensure the sender is the customer
         require(self.isActive == true, "Deal isn't active"); // Ensure the deal is active
         require(self.isFinished == false, "Deal is already finished");

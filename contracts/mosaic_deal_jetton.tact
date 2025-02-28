@@ -1,7 +1,7 @@
 import "@stdlib/deploy";
 import "./models/messages.tact";
 
-contract DealJetton with Deployable {
+contract DealJetton {
     id: String; // Unique identifier for the deal
     amount: Int; // Total value of the deal in TON
     admin: Address; // Administrator's address who manages the deal
@@ -9,9 +9,8 @@ contract DealJetton with Deployable {
     freelancer: Address; // Freelancer's address who will fulfill the job
     isActive: Bool; // Boolean flag indicating if the deal is active
     isFinished: Bool; // Boolean flag indicating if the deal is finished
-    jettonWalletAddress: Address;
-    customerJettonAddress: Address;
-    freelancerJettonAddress: Address;
+    jettonWallet: Address;
+    jettonMaster: Address;
     /**
     @dev Constructor to initialize the deal contract.
     @param dealId Unique identifier for the deal.
@@ -20,14 +19,7 @@ contract DealJetton with Deployable {
     @param customer The address of the customer who created the deal.
     @param freelancer The address of the freelancer performing the job in the deal.
     **/
-    init(id: String,
-        amount: Int,
-        admin: Address,
-        customer: Address,
-        customerJettonAddress: Address,
-        freelancer: Address,
-        freelancerJettonAddress: Address,
-        jettonMasterAddress: Address){
+    init(id: String, amount: Int, admin: Address, customer: Address, freelancer: Address, jettonMaster: Address){
         // require(admin != newAddress(0, 0), "Incorrect admin address"); // Check if the admin address is valid
         // require(customer != newAddress(0, 0), "Incorrect customer address"); // Check if the customer address is valid
         // require(freelancer != newAddress(0, 0), "Incorrect freelancer address"); // Check if the freelancer address is valid
@@ -40,11 +32,13 @@ contract DealJetton with Deployable {
         self.freelancer = freelancer; // Set the freelancer's address
         self.isActive = false; // Mark the deal as inactive initially
         self.isFinished = false; // Mark the deal as unfinished initially
-        self.jettonWalletAddress = jettonMasterAddress; // Temporary initialization
-        self.freelancerJettonAddress = freelancerJettonAddress;
-        self.customerJettonAddress = customerJettonAddress;
+        self.jettonMaster = jettonMaster;
+        self.jettonWallet = newAddress(0, 0);
+    }
+
+    receive("Init"){
         send(SendParameters{
-                to: jettonMasterAddress,
+                to: self.jettonMaster,
                 value: 0,
                 mode: SendRemainingValue,
                 body: ProvideWalletAddress{queryId: now(), ownerAddress: myAddress(), includeAddress: false}.toCell()
@@ -53,8 +47,8 @@ contract DealJetton with Deployable {
     }
 
     receive(msg: TakeWalletAddress){
-        require(sender() == self.jettonWalletAddress, "unauthorized"); // jettonWalletAddress is master address, before we change it
-        self.jettonWalletAddress = msg.walletAddress;
+        require(sender() == self.jettonMaster, "unauthorized");
+        self.jettonWallet = msg.walletAddress;
     }
 
     receive(msg: Excesses){}
@@ -65,7 +59,7 @@ contract DealJetton with Deployable {
     receive(msg: JettonTransferNotification){
         require(self.isActive == false, "Deal is already laucnhed");
         require(self.isFinished == false, "Deal is already finished");
-        require(sender() == self.jettonWalletAddress, "Incorrect sender");
+        require(sender() == self.jettonWallet, "Incorrect sender");
         require(msg.amount >= self.amount, "Incorrect amount");
         self.isActive = true;
     }
@@ -74,7 +68,7 @@ contract DealJetton with Deployable {
     @dev Marks the deal as finished by the customer and transfers the remaining balance to the freelancer.
     @param msg The message indicating the deal should be completed.
     **/
-    receive(msg: FinishDeal){
+    receive("Finish deal"){
         require(context().sender == self.customer, "Incorrect sender"); // Ensure the sender is the customer
         require(self.isActive == true, "Deal isn't active"); // Ensure the deal is active
         require(context().value >= ton("0.05"), "Message value is too low"); // Ensure the message value is at least 0.15 TON
@@ -83,7 +77,7 @@ contract DealJetton with Deployable {
         self.isFinished = true; // Mark the deal as finished
 
         send(SendParameters{
-                to: self.freelancerJettonAddress,
+                to: self.jettonWallet,
                 value: 0,
                 mode: SendRemainingValue,
                 bounce: false,
@@ -91,7 +85,7 @@ contract DealJetton with Deployable {
                     queryId: 1,
                     amount: self.amount,
                     destination: self.freelancer,
-                    responseDestination: self.customer,
+                    responseDestination: self.customer, // TODO: set this
                     customPayload: null,
                     forwardAmount: 1,
                     forwardPayload: null
@@ -181,6 +175,6 @@ contract DealJetton with Deployable {
     }
 
     get fun jettonWalletAddress(): Address {
-        return self.jettonWalletAddress;
+        return self.jettonWallet;
     }
 }

@@ -28,17 +28,16 @@ contract MosaicFactoryContract with Deployable {
         let init: StateInit = initOf DealJetton(msg.id,
             msg.amount,
             msg.admin,
-            msg.customerAddress,
-            msg.customerJettonAddress,
-            msg.freelancerAddress,
-            msg.freelancerJettonAddress,
-            msg.jettonMasterAddress
+            msg.customer,
+            msg.freelancer,
+            msg.jettonMaster
         );
         let dealJettonAddress: Address = contractAddress(init);
         send(SendParameters{
             to: dealJettonAddress,
             value: 0,
             mode: SendRemainingValue + SendIgnoreErrors,
+            body: "Init".asComment(),
             code: init.code,
             data: init.data
         })
@@ -60,11 +59,9 @@ contract MosaicFactoryContract with Deployable {
         let init: StateInit = initOf DealJetton(msg.id,
             msg.amount,
             msg.admin,
-            msg.customerAddress,
-            msg.customerJettonAddress,
-            msg.freelancerAddress,
-            msg.freelancerJettonAddress,
-            msg.jettonMasterAddress
+            msg.customer,
+            msg.freelancer,
+            msg.jettonMaster
         );
         return contractAddress(init);
     }

@@ -121,11 +121,9 @@ message CreateDealWithJetton {
     id: String;
     amount: Int as coins;
     admin: Address;
-    customerAddress: Address;
-    customerJettonAddress: Address;
-    freelancerAddress: Address;
-    freelancerJettonAddress: Address;
-    jettonMasterAddress: Address;
+    customer: Address;
+    freelancer: Address;
+    jettonMaster: Address;
 }
 // DealJetton
 message(0xf8a7ea5) JettonTransfer {
@@ -145,8 +143,6 @@ message(0x7362d09c) JettonTransferNotification {
 }
 // Common
 
-message FinishDeal {
-}
 message AdminForceEnd {
     receiver: Address;
 }
